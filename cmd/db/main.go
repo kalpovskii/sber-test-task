@@ -13,15 +13,6 @@ import (
 )
 
 func initConfig() {
-	// if _, err := os.Stat(".env"); err == nil {
-	// 	if err := godotenv.Load(); err != nil {
-	// 		log.Fatalf("failed to load .env: %v", err)
-	// 	}
-	// 	log.Println("Config loaded from .env")
-	// } else {
-	// 	log.Fatal(".env file is missing")
-	// }
-
 	viper.SetEnvPrefix("CHECKLIST")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
