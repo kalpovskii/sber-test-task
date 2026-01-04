@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -11,17 +12,36 @@ import (
 	"github.com/spf13/viper"
 )
 
+func initConfig() {
+	// if _, err := os.Stat(".env"); err == nil {
+	// 	if err := godotenv.Load(); err != nil {
+	// 		log.Fatalf("failed to load .env: %v", err)
+	// 	}
+	// 	log.Println("Config loaded from .env")
+	// } else {
+	// 	log.Fatal(".env file is missing")
+	// }
+
+	viper.SetEnvPrefix("CHECKLIST")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+}
+
 func main() {
-	viper.SetConfigFile("../../configs/config.yaml")
-	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal(err)
+	initConfig()
+
+	dsn := viper.GetString("DB_POSTGRES_DSN")
+	port := viper.GetString("DB_PORT") 
+
+	if dsn == "" || port == "" {
+		log.Fatal("db.postgres.dsn or db.port is not configured")
 	}
 
-	dsn := viper.GetString("db.postgres.dsn")
 	repo, err := repositories.NewPostgresTaskRepo(dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	service := services.NewTaskService(repo)
 
 	r := gin.Default()
@@ -94,6 +114,5 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "done"})
 	})
 
-	port := viper.GetString("db.port")
 	log.Fatal(r.Run(":" + port))
 }
