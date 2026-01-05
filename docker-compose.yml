@@ -8,10 +8,6 @@ services:
       POSTGRES_DB: checklist
       POSTGRES_USER: checklist
       POSTGRES_PASSWORD: checklist
-    ports:
-      - "5432:5432"
-    env_file:
-      - .env
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -28,13 +24,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      CHECKLIST_DB_PORT: 8081
-      CHECKLIST_DB_POSTGRES_DSN: postgres://checklist:checklist@postgres:5432/checklist?sslmode=disable
-    ports:
-      - "8081:8081"
     env_file:
       - .env
+    ports:
+      - "50051:50051"
 
   api:
     build:
@@ -43,13 +36,10 @@ services:
     container_name: checklist-api
     depends_on:
       - db
-    environment:
-      CHECKLIST_API_PORT: 8080
-      CHECKLIST_DB_SERVICE_URL: http://db:8081
-    ports:
-      - "8080:8080"
     env_file:
       - .env
+    ports:
+      - "8080:8080"
 
 volumes:
   pgdata:

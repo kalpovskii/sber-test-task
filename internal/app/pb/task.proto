@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package checklist;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+option go_package = "./;pb";
+
+message Task {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+  bool done = 4;
+  google.protobuf.Timestamp created_at = 5;
+}
+
+message CreateTaskRequest {
+  string title = 1;
+  string content = 2;
+}
+
+message TaskResponse {
+  Task task = 1;
+}
+
+message TaskIDRequest {
+  string id = 1;
+}
+
+message StatusResponse {
+  string status = 1;
+}
+
+message TaskListResponse {
+  repeated Task tasks = 1;
+}
+
+service TaskService {
+  rpc Create(CreateTaskRequest) returns (TaskResponse);
+  rpc List(google.protobuf.Empty) returns (TaskListResponse);
+  rpc Delete(TaskIDRequest) returns (StatusResponse);
+  rpc MarkDone(TaskIDRequest) returns (StatusResponse);
+}
