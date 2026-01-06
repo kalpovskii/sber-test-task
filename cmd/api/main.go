@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/kalpovskii/checklist/internal/app/pb"
+	"github.com/kalpovskii/checklist/internal/kafka"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -27,6 +28,9 @@ func main() {
 
   grpcURL := viper.GetString("DB_GRPC_URL")
   apiPort := viper.GetString("API_PORT")
+	// initializing kafka
+	kafkaBroker := viper.GetString("KAFKA_BROKER")
+	kafkaTopic := viper.GetString("KAFKA_TOPIC")
 
 	if apiPort == "" || grpcURL == "" {
 		log.Fatal("API_PORT or DB_GRPC_URL is not configured")
@@ -41,20 +45,30 @@ func main() {
 
 	taskClient = pb.NewTaskServiceClient(conn)
 
+	// create kafka producer
+	producer := kafka.NewProducer(kafkaBroker, kafkaTopic)
+
 	log.Printf("API started on :%s", apiPort)
 	log.Printf("Connected to gRPC DB at %s", grpcURL)
+	log.Printf("Kafka producer connected to %s topic %s", kafkaBroker, kafkaTopic)
 
 	r := gin.Default()
 
-	r.POST("/create", createHandler)
-	r.GET("/list", listHandler)
-	r.DELETE("/delete", deleteHandler)
-	r.PUT("/done", doneHandler)
+	r.POST("/create", func(c *gin.Context) {createHandler(c, producer)})
+	r.GET("/list", func(c *gin.Context) { listHandler(c, producer) })
+	r.DELETE("/delete", func(c *gin.Context) { deleteHandler(c, producer) })
+	r.PUT("/done", func(c *gin.Context) { doneHandler(c, producer) })
 
 	log.Fatal(r.Run(":" + apiPort))
 }
 
-func createHandler(c *gin.Context) {
+func sendKafkaEvent(producer *kafka.Producer, action string) {
+	if producer != nil {
+		producer.SendEvent(action)
+	}
+}
+
+func createHandler(c *gin.Context, producer *kafka.Producer) {
 	var req struct {
 		Title   string `json:"title"`
 		Content string `json:"content"`
@@ -76,10 +90,12 @@ func createHandler(c *gin.Context) {
 		return
 	}
 
+	sendKafkaEvent(producer, "create")
+
 	c.JSON(http.StatusOK, res.Task)
 }
 
-func listHandler(c *gin.Context) {
+func listHandler(c *gin.Context, producer *kafka.Producer) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -89,10 +105,12 @@ func listHandler(c *gin.Context) {
 		return
 	}
 
+	sendKafkaEvent(producer, "list")
+
 	c.JSON(http.StatusOK, res.Tasks)
 }
 
-func deleteHandler(c *gin.Context) {
+func deleteHandler(c *gin.Context, producer *kafka.Producer) {
 	var req struct {
 		ID string `json:"id"`
 	}
@@ -110,10 +128,12 @@ func deleteHandler(c *gin.Context) {
 		return
 	}
 
+	sendKafkaEvent(producer, "delete")
+
 	c.JSON(http.StatusOK, res)
 }
 
-func doneHandler(c *gin.Context) {
+func doneHandler(c *gin.Context, producer *kafka.Producer) {
 	var req struct {
 		ID string `json:"id"`
 	}
@@ -130,6 +150,8 @@ func doneHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
+	sendKafkaEvent(producer, "mark_done")
 
 	c.JSON(http.StatusOK, res)
 }

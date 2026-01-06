@@ -38,6 +38,18 @@ services:
     ports:
       - "50051:50051"
 
+  kafka-logger:
+    build:
+      context: .
+      dockerfile: Dockerfile.kafka
+    container_name: checklist-kafka-logger
+    env_file:
+      - .env
+    depends_on:
+      - kafka
+    volumes:
+      - ./logs:/logs    
+
   api:
     build:
       context: .
@@ -49,6 +61,24 @@ services:
       - .env
     ports:
       - "8080:8080"
+
+  zookeeper:
+    image: zookeeper:3.8
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: checklist-kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
 
 volumes:
   pgdata:
