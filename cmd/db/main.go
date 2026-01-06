@@ -4,11 +4,13 @@ import (
 	"context"
 	"log"
 	"net"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/kalpovskii/checklist/internal/app/pb"
 	"github.com/kalpovskii/checklist/internal/app/repositories"
 	"github.com/kalpovskii/checklist/internal/app/services"
+	"github.com/redis/go-redis/v9"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -84,6 +86,10 @@ func main() {
 	viper.SetEnvPrefix("CHECKLIST")
 	viper.AutomaticEnv()
 
+	redisAddr := viper.GetString("REDIS_ADDR")
+	if redisAddr == "" {
+		log.Fatal("REDIS_ADDR is not configured")
+	}
 	port := viper.GetString("DB_GRPC_PORT")
   dsn  := viper.GetString("DB_POSTGRES_DSN")
 	if dsn == "" || port == "" {
@@ -95,7 +101,19 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service := services.NewTaskService(repo)
+	rdb := redis.NewClient(&redis.Options{
+	  Addr: redisAddr,
+  })
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+  defer cancel()
+
+  if err := rdb.Ping(ctx).Err(); err != nil {
+	 log.Fatal("redis connection failed:", err)
+  }
+	cache := repositories.NewRedisTaskRepository(rdb)
+
+
+	service := services.NewTaskService(repo, cache)
 	server := &TaskServer{service: service}
 
 	lis, err := net.Listen("tcp", ":"+port)
