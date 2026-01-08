@@ -108,6 +108,8 @@ go tool cover -html=coverage.out -o coverage.html
 
 События обрабатываются Kafka Logger сервисом и записываются в файл логов (logs/kafka.log)
 
+![alt text](<images/image copy 5.png>)
+
 ## 📁 Структура проекта
 
 ```
