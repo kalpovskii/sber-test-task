@@ -43,7 +43,7 @@ Content-Type: application/json
 ```
 
 **Ответ:**
-![alt text](image.png)
+![alt text](images/image.png)
 
 ### Получить список задач
 ```http
