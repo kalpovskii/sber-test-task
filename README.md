@@ -35,54 +35,33 @@ API-сервис проксирует пользовательские запр�
 ## 📡 Работа API Endpoints
 
 ### Создать задачу
-```http
-POST /create
-Content-Type: application/json
-
-{
-  "title": "Название задачи",
-  "content": "Описание задачи"
-}
-```
 
 **Ответ:**
 ![alt text](images/image.png)
 
 ### Получить список задач
-```http
-GET /list
-```
 
 **Ответ:**
 
 ![alt text](<images/image copy.png>)
 
 ### Удалить задачу
-```http
-DELETE /delete
-Content-Type: application/json
-
-{
-  "id": "uuid"
-}
-```
 
 **Ответ:**
 
 ![alt text](<images/image copy 2.png>)
 
 ### Отметить задачу как выполненную
-```http
-PUT /done
-Content-Type: application/json
-
-{
-  "id": "uuid"
-}
-```
 
 **Ответ:**
 ![alt text](<images/image copy 3.png>)
+
+## Docker
+
+```bash
+# Запуск всех сервисов
+docker compose up -d
+```
 
 ## 🧪 Тестирование
 
