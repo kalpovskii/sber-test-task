@@ -57,7 +57,7 @@
 				
 				<option value="file0">github.com/kalpovskii/checklist/cmd/api/main.go (46.7%)</option>
 				
-				<option value="file1">github.com/kalpovskii/checklist/cmd/db/main.go (0.0%)</option>
+				<option value="file1">github.com/kalpovskii/checklist/cmd/db/main.go (47.2%)</option>
 				
 				<option value="file2">github.com/kalpovskii/checklist/cmd/kafka-logger/main.go (0.0%)</option>
 				
@@ -267,12 +267,12 @@ type TaskServer struct {
         service *services.TaskService
 }
 
-func (s *TaskServer) Create(ctx context.Context, req *pb.CreateTaskRequest) (*pb.TaskResponse, error) <span class="cov0" title="0">{
+func (s *TaskServer) Create(ctx context.Context, req *pb.CreateTaskRequest) (*pb.TaskResponse, error) <span class="cov8" title="1">{
         task, err := s.service.Create(req.Title, req.Content)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov0" title="0">return &amp;pb.TaskResponse{
+        <span class="cov8" title="1">return &amp;pb.TaskResponse{
                 Task: &amp;pb.Task{
                         Id:        task.ID.String(),
                         Title:     task.Title,
@@ -283,14 +283,14 @@ func (s *TaskServer) Create(ctx context.Context, req *pb.CreateTaskRequest) (*pb
         }, nil</span>
 }
 
-func (s *TaskServer) List(ctx context.Context, req *emptypb.Empty) (*pb.TaskListResponse, error) <span class="cov0" title="0">{
+func (s *TaskServer) List(ctx context.Context, req *emptypb.Empty) (*pb.TaskListResponse, error) <span class="cov8" title="1">{
     tasks, err := s.service.List()
-    if err != nil </span><span class="cov0" title="0">{
+    if err != nil </span><span class="cov8" title="1">{
         return nil, err
     }</span>
 
-    <span class="cov0" title="0">resp := &amp;pb.TaskListResponse{}
-    for _, t := range tasks </span><span class="cov0" title="0">{
+    <span class="cov8" title="1">resp := &amp;pb.TaskListResponse{}
+    for _, t := range tasks </span><span class="cov8" title="1">{
         resp.Tasks = append(resp.Tasks, &amp;pb.Task{
             Id:        t.ID.String(),
             Title:     t.Title,
@@ -299,32 +299,32 @@ func (s *TaskServer) List(ctx context.Context, req *emptypb.Empty) (*pb.TaskList
             CreatedAt: timestamppb.New(t.CreatedAt),
         })
     }</span>
-    <span class="cov0" title="0">return resp, nil</span>
+    <span class="cov8" title="1">return resp, nil</span>
 }
 
-func (s *TaskServer) Delete(ctx context.Context, req *pb.TaskIDRequest) (*pb.StatusResponse, error) <span class="cov0" title="0">{
+func (s *TaskServer) Delete(ctx context.Context, req *pb.TaskIDRequest) (*pb.StatusResponse, error) <span class="cov8" title="1">{
         id, err := uuid.Parse(req.Id)
-  if err != nil </span><span class="cov0" title="0">{
+  if err != nil </span><span class="cov8" title="1">{
       return nil, err
         }</span>
         
-        <span class="cov0" title="0">err = s.service.Delete(id)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">err = s.service.Delete(id)
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov0" title="0">return &amp;pb.StatusResponse{Status: "deleted"}, nil</span>
+        <span class="cov8" title="1">return &amp;pb.StatusResponse{Status: "deleted"}, nil</span>
 }
 
-func (s *TaskServer) MarkDone(ctx context.Context, req *pb.TaskIDRequest) (*pb.StatusResponse, error) <span class="cov0" title="0">{
+func (s *TaskServer) MarkDone(ctx context.Context, req *pb.TaskIDRequest) (*pb.StatusResponse, error) <span class="cov8" title="1">{
         id, err := uuid.Parse(req.Id)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov0" title="0">err = s.service.MarkDone(id)
-        if err != nil </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">err = s.service.MarkDone(id)
+        if err != nil </span><span class="cov8" title="1">{
                 return nil, err
         }</span>
-        <span class="cov0" title="0">return &amp;pb.StatusResponse{Status: "done"}, nil</span>
+        <span class="cov8" title="1">return &amp;pb.StatusResponse{Status: "done"}, nil</span>
 }
 
 func main() <span class="cov0" title="0">{
